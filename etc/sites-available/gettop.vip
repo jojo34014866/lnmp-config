@@ -1,0 +1,49 @@
+server {
+    server_name gettop.vip www.gettop.vip;
+    root /var/www/gettop.vip;
+    index index.php index.html;
+
+    # 优先处理 ACME 挑战
+    location ^~ /.well-known/acme-challenge/ {
+        allow all;
+        default_type "text/plain";
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+        include fastcgi_params;
+    }
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/gettop.vip/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/gettop.vip/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+}
+server {
+    if ($host = www.gettop.vip) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = gettop.vip) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen [::]:80;
+    server_name gettop.vip www.gettop.vip;
+    return 404; # managed by Certbot
+
+
+
+
+}
